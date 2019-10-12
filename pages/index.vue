@@ -59,18 +59,29 @@ export default {
       
     },
   },
-  mounted() {
+  // mounted() {
+  //   // 页面加载时获取后台 轮播图数据
+  //   this.$axios({
+  //     // 查看Api拿请求地址   因为已经配置基准路径
+  //     url: "/scenics/banners"
+  //   }).then(res => {
+  //     // console.log(res)  // res.data.data.url
+  //     const { data } = res.data;
+  //     // console.log(data)
+  //     this.banners = data;
+  //   });
+  // },
+  // async 和 await 组合的用法 
+  async mounted(){
     // 页面加载时获取后台 轮播图数据
-    this.$axios({
-      // 查看Api拿请求地址   因为已经配置基准路径
-      url: "/scenics/banners"
-    }).then(res => {
-      // console.log(res)  // res.data.data.url
-      const { data } = res.data;
-      // console.log(data)
-      this.banners = data;
-    });
+    const res= await this.$axios({
+      url:"/scenics/banners",
+    })
+    const {data} = res.data
+    // console.log(data)
+    this.banners = data
   }
+
 };
 </script>
 
