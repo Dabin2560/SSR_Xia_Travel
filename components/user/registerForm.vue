@@ -66,29 +66,55 @@ export default {
   },
   methods: {
     // 提交 注册 按钮事件
+    // handleLoginRegister() {
+    //   // console.log(this.form)
+    //   this.$refs["form"].validate(valid => {
+    //     // 判断有无值, 若有，解构除了 checkPass（二次验证当前用户输入的密码，不传后台）
+    //     if (valid) {
+    //       const { checkPass, ...props } = this.form;
+    //       // 获取接口数据
+    //       this.$axios({
+    //         url: "/accounts/register",
+    //         method: "POST",
+    //         data: props
+    //       }).then(res => {
+    //         // console.log(res);
+    //         if (res.status === 200) {
+    //           this.$message.success("注册成功");
+    //           setTimeout(() => {
+    //             this.$router.push("/");
+    //           }, 1500);
+    //         }
+    //       });
+    //     }
+    //   });
+    // },
+    // 提交 注册 按钮事件 -----（异步 async  await）-----
     handleLoginRegister() {
-      // console.log(this.form)
-      this.$refs["form"].validate(valid => {
-        // 判断有无值, 若有，解构除了 checkPass（二次验证当前用户输入的密码，不传后台）
+      this.$refs.form.validate(async valid => {
+        const { checkPass, ...props } = this.form;
         if (valid) {
-          const { checkPass, ...props } = this.form;
-          // 获取接口数据
-          this.$axios({
+          const res = await this.$axios({
             url: "/accounts/register",
             method: "POST",
             data: props
-          }).then(res => {
-            // console.log(res);
-            if (res.status === 200) {
-              this.$message.success("注册成功");
-              setTimeout(() => {
-                this.$router.push("/");
-              }, 1500);
-            }
           });
+          if (res.status === 200) {
+            this.$message.success("注册成功");
+            // 获取data
+            // console.log(res)
+            const data = res.data
+
+            // vuex的状态管理模式 通过commit方法修改user/steUserInfo函数内的值
+            this.$store.commit("user/steUserInfo",data)
+            setTimeout(() => {
+              this.$router.push("/");
+            }, 1500);
+          }
         }
       });
     },
+
     // 手机验证码 事件
     async handleSendCaptcha() {
       // 添加判断

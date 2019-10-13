@@ -45,6 +45,19 @@ export default {
         // console.log(res)
         if (res.status === 200) {
           this.$message.success("登录成功");
+          // 解构出来以便保存
+          const data = res.data
+          // console.log(data)
+          // 需求：把用户信息token保存到本地，在头部组件中显示用户数据
+          // * vuex不能通过直接赋值的方式来修改state的值
+          // this.$store.state.user.username = data.user.nickname
+
+          // 通过调用 user.js的 mutation同步方法，修改state的值，commit方法调用mutation
+
+          // 类似于$emit()方式
+          // this.$store.commit()方法 参数1 store/user/ 下暴露出来的事件 参数二：上面的data，赋值到state
+          this.$store.commit("user/steUserInfo",data)
+
           setTimeout(() => {
             this.$router.push("/");
           }, 1500);
