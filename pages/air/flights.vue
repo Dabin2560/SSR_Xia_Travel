@@ -41,6 +41,7 @@
       <!-- 侧边栏 -->
       <div class="aside">
         <!-- 侧边栏组件 -->
+        <FlightsAside />
       </div>
     </el-row>
   </section>
@@ -55,11 +56,14 @@ import FlightsItem from "@/components/air/flightsItem";
 // 引入 顶部过滤列表
 import FlightsFilters from "@/components/air/flightsFilters";
 
+import FlightsAside from "@/components/air/flightsAside";
+
 export default {
   components: {
     FlightsListHead,
     FlightsItem,
-    FlightsFilters
+    FlightsFilters,
+    FlightsAside
   },
   data() {
     return {
@@ -109,7 +113,7 @@ export default {
       // 子组件，过滤后通过事件传的数据afterFilter，赋值 渲染到页面
       this.flightsData.flights = afterFilter;
       // 分页的初始值
-      this.total=afterFilter.length;
+      this.total = afterFilter.length;
       // 筛选后，数据回到第一页
       this.pageIndex = 1;
     },
@@ -147,10 +151,16 @@ export default {
       return arr;
     }
   },
+  // 监听单个
+  watch: {
+    $route() {
+      this.getALLData();
+    }
+  },
   mounted() {
     // 页面加载时，调用获取后台数据
     // 即 页面加载获取后台API数据
-    this.getALLData()
+    this.getALLData();
   }
 };
 </script>

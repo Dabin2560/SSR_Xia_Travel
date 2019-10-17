@@ -86,8 +86,8 @@ export default {
       // console.log(item)
       // console.log(seat.seat_xid)
       this.$router.push({
-        path:"/airs/order",
-        params:{id:item.id,seat_xid:seat.seat_xid}
+        path:"/air/order",
+        query:{id:item.id,seat_xid:seat.seat_xid}
       })
     }
   },

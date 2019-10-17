@@ -13,6 +13,10 @@ export default (context) => {
     if (statusCode === 400) {
       Message.error(message)
     }
+    if(statusCode===403){
+      // 1.提交机票订单，后台验证无token，无登录，重定向到登录页
+      context.redirect("/user/login")
+    }
   })
 
 }
