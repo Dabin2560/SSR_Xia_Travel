@@ -65,20 +65,48 @@ export default {
     };
   },
   methods: {
-
+    // 提交 注册 按钮事件
+    // handleLoginRegister() {
+    //   // console.log(this.form)
+    //   this.$refs["form"].validate(valid => {
+    //     // 判断有无值, 若有，解构除了 checkPass（二次验证当前用户输入的密码，不传后台）
+    //     if (valid) {
+    //       const { checkPass, ...props } = this.form;
+    //       // 获取接口数据
+    //       this.$axios({
+    //         url: "/accounts/register",
+    //         method: "POST",
+    //         data: props
+    //       }).then(res => {
+    //         // console.log(res);
+    //         if (res.status === 200) {
+    //           this.$message.success("注册成功");
+    //           setTimeout(() => {
+    //             this.$router.push("/");
+    //           }, 1500);
+    //         }
+    //       });
+    //     }
+    //   });
+    // },
     // 提交 注册 按钮事件 -----（异步 async  await）-----
     handleLoginRegister() {
       this.$refs.form.validate(async valid => {
-        // checkPass为验证密码，不需要要传后台，解构出来； ...props ：剩余的数据
         const { checkPass, ...props } = this.form;
         if (valid) {
-          // 使用vuex管理模式  dispatch的传值方法   （mutations同步，传值用commit）
-          // 参数一：store/user/ 下暴露的login函数  参数二：传过去的登录表单value
-          const res= await this.$store.dispatch("user/register",props)
-          // 判断状态码 200成功 弹窗显示
+          const res = await this.$axios({
+            url: "/accounts/register",
+            method: "POST",
+            data: props
+          });
           if (res.status === 200) {
             this.$message.success("注册成功");
-            // 成功跳转
+            // 获取data
+            // console.log(res)
+            const data = res.data
+
+            // vuex的状态管理模式 通过commit方法修改user/steUserInfo函数内的值
+            this.$store.commit("user/steUserInfo",data)
             setTimeout(() => {
               this.$router.push("/");
             }, 1500);
@@ -89,7 +117,6 @@ export default {
 
     // 手机验证码 事件
     async handleSendCaptcha() {
-      
       // 添加判断
       if (this.form.username.length !== 11) {
         this.$alert("手机帐号不能为空或格式错误", "错误提示", {
@@ -101,8 +128,15 @@ export default {
       }
 
       // 获取手机验证码 接口 /captchas
-      const res = await this.$store.dispatch("user/sendCaptcha",this.form.username)
-      // 
+      let res = await this.$axios({
+        url: "/captchas",
+        method: "POST",
+        data: {
+          tel: this.form.username
+        }
+      });
+      // console.log(res);
+      //  解构 res.data.data.
       const { code } = res.data;
       // 返回模拟的验证码
       this.$alert(`此次的验证码为${code}`, "验证码", {
