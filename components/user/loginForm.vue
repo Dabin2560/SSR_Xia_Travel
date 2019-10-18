@@ -47,7 +47,7 @@ export default {
             this.$message.success("登录成功");
             // 登录成功跳转
             setTimeout(() => {
-              this.$router.push("/");
+              this.$router.back("/");
             }, 1500);
           }
         }

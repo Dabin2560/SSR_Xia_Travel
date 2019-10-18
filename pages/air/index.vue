@@ -79,7 +79,7 @@ export default {
     }).then(res=>{
       const {data} = res.data
       this.sales=data
-      console.log(this.sales)
+      // console.log(this.sales)
     })
   },
   components: {

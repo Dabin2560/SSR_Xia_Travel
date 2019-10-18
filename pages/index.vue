@@ -54,7 +54,7 @@ export default {
     changeTab(index){
       this.current=index;
       if(index===2){
-        this.$router.back("/air")
+        this.$router.push("/air")
       }
       
     },

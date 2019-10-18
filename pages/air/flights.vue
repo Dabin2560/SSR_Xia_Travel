@@ -55,7 +55,7 @@ import FlightsListHead from "@/components/air/flightsListHead";
 import FlightsItem from "@/components/air/flightsItem";
 // 引入 顶部过滤列表
 import FlightsFilters from "@/components/air/flightsFilters";
-
+// 列表页历史记录 侧边栏
 import FlightsAside from "@/components/air/flightsAside";
 
 export default {

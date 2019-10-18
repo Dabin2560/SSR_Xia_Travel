@@ -3,9 +3,7 @@
     <div class="air-column">
       <h2>剩机人</h2>
       <el-form class="member-info">
-        <div class="member-info-item" 
-        v-for="(item,index) in this.users"
-        :key="index">
+        <div class="member-info-item" v-for="(item,index) in this.users" :key="index">
           <el-form-item label="乘机人类型">
             <el-input placeholder="姓名" class="input-with-select" v-model="item.username">
               <el-select slot="prepend" value="1" placeholder="请选择">
@@ -33,10 +31,11 @@
       <h2>保险</h2>
       <div>
         <div class="insurance-item" v-for="(item,index) in this.detail.insurances" :key="index">
-          <el-checkbox 
-          :label="`${item.type}：￥${item.price}/份×1　最高赔付${item.compensation}`" 
-          @change="handleInsurances(item.id)"
-          border></el-checkbox>
+          <el-checkbox
+            :label="`${item.type}：￥${item.price}/份×1　最高赔付${item.compensation}`"
+            @change="handleInsurances(item.id)"
+            border
+          ></el-checkbox>
         </div>
       </div>
     </div>
@@ -63,97 +62,96 @@
         </el-form>
         <el-button type="warning" class="submit" @click="handleSubmit">提交订单</el-button>
       </div>
+      <!-- 调用总价格，让computed会执行 -->
+      <span v-show="false">{{allPrice}}</span>
     </div>
   </div>
 </template>
 
 <script>
 export default {
-
   data() {
-        return {
-          // 机票的详情
-          detail:{},
-            // 声明要保存的表单（乘机人/证件）数据，可以有多个人，
-            users:[
-                {username:"",id:""},
-            ],
-            // insurances是保存 乘机人购买的保险
-            insurances:[],
-            // 联系人姓名 手机 验证码
-            contactName:"",
-            contactPhone:"",
-            captcha:"", // 手机验证码
-            invoice:false, // 是否需要发票
-            
-        }
-    },
+    return {
+      // 机票的详情
+      detail: {},
+      // 声明要保存的表单（乘机人/证件）数据，可以有多个人，
+      users: [{ username: "", id: "" }],
+      // insurances是保存 乘机人购买的保险
+      insurances: [],
+      // 联系人姓名 手机 验证码
+      contactName: "",
+      contactPhone: "",
+      captcha: "", // 手机验证码
+      invoice: false // 是否需要发票
+    };
+  },
   methods: {
     // 添加乘机人
     handleAddUsers() {
       // 事件 点击添加一项
-      this.users.push({username:"",id:""})
+      this.users.push({ username: "", id: "" });
     },
 
     // 移除乘机人
     handleDeleteUser(index) {
-      this.users.splice(index,1)
+      this.users.splice(index, 1);
     },
-    // 选择保险时触发  
-    handleInsurances(id){
+    // 选择保险时触发
+    handleInsurances(id) {
       // 判断乘机人此次机票是否已经点击购买保险(是购买一项/还是2项)，（选择框点击事件）若存在则删除，若不存在则添加
       // indexOf() 方法可返回某个指定的字符串值在字符串中首次出现的位置。
       // 如果要检索的字符串值没有出现，则该方法返回 -1，且对大小写敏感
-      const index = this.insurances.indexOf(id)
+      const index = this.insurances.indexOf(id);
       // 判断 输出的值大于-1 则说明insurances有数据，已选状态
-      if(index> -1){
+      if (index > -1) {
         // 存在则删除
-        this.insurances.splice(index,1)
-      }else{
+        this.insurances.splice(index, 1);
+      } else {
         // 不存在则添加
-        this.insurances.push(id)
+        this.insurances.push(id);
       }
-      console.log(this.insurances)
-
+      // console.log(this.insurances)
     },
     // 发送手机验证码
     async handleSendCaptcha() {
       // 判断不为空才能发送
-      if(!this.contactPhone){
+      if (!this.contactPhone) {
         this.$message.error("手机号码不能为空");
-        return
+        return;
       }
       // 调用vuex管理 的手机号码验证
-      const res= await this.$store.dispatch("user/sendCaptcha",this.contactPhone);
+      const res = await this.$store.dispatch(
+        "user/sendCaptcha",
+        this.contactPhone
+      );
       // console.log(res)
       this.$message.success(`当前的验证码为${res.data.code}`);
     },
 
     // 提交订单
-    async handleSubmit(){
+    async handleSubmit() {
       const data = {
-        users:this.users,
-        insurances:this.insurances,
-        contactName:this.contactName,
-        contactPhone:this.contactPhone,
-        captcha:this.captcha,
-        seat_xid:this.$route.query.seat_xid,
-        id:this.$route.query.id,
-        invoice:this.invoice,
-      }
-      // console.log(data)
-      const res=await this.$axios({
-        url:"/airorders",
-        method:"POST",
+        users: this.users,
+        insurances: this.insurances,
+        contactName: this.contactName,
+        contactPhone: this.contactPhone,
+        captcha: this.captcha,
+        seat_xid: this.$route.query.seat_xid,
+        air: this.$route.query.id,
+        invoice: this.invoice
+      };
+      // console.log(data);
+      const res = await this.$axios({
+        url: "/airorders",
+        method: "POST",
         data,
-        headers:{
+        headers: {
+          // 这是jwt标准的token
           Authorization: `Bearer ${this.$store.state.user.userInfo.token}`
         }
-      })
-      // console.log(res) // 发现报错403（提交机票订单，后台验证无token，无登录，重定向到登录页）， 
+      });
+      // console.log(res) // 发现报错403（提交机票订单，后台验证无token，无登录，重定向到登录页），
       // 在plugins/axios.js中，添加拦截
-
-
     }
   },
   mounted() {
@@ -161,18 +159,40 @@ export default {
 
     // console.log(this.$route.query)
     // 解构出url传过来的id和机票id
-    const {id,seat_xid} = this.$route.query
+    const { id, seat_xid } = this.$route.query;
     // 请求
     this.$axios({
-      url:"/airs/"+id,
+      url: "/airs/" + id,
       params: {
         seat_xid
       }
-    }).then(res=>{
-      console.log(res)
-      this.detail=res.data
-    })
+    }).then(res => {
+      // console.log(res)
+      this.detail = res.data;
+      // 子组件 orderAside.vue需要用到数据，子1 → 父 → 子2
+      this.$emit("getDetail", this.detail);
+    });
   },
+  // 监听关于价钱项目，按照客户选择/表单数据 变化，计算价格
+  computed: {
+    allPrice() {
+      // 如果还没请求到此数据，先返回
+      if (!this.detail.seat_infos) return;
+      // 计算总价
+      let price = 0;
+      // 机票单价
+      price += this.detail.seat_infos.org_settle_price;
+      // 机场建设/燃油附加
+      price += this.detail.airport_tax_audlet;
+      // 保险费用 意外/延误 2款，一款30
+      price += this.detail.insurances.length * 30;
+      // 人数
+      price *= this.users.length;
+      // 将总价 通过事件传入父组件，到侧栏使用
+      this.$emit("getAllPrice", price);
+      return price;
+    }
+  }
 };
 </script>
 

@@ -61,6 +61,9 @@
 </template>
 
 <script>
+// 导入计算的方法
+import {computationTime} from "@/utils/utils"
+
 export default {
   // props除了场常规传[]。还能传对象
   props: {
@@ -95,24 +98,25 @@ export default {
   computed: {
     // 出发-到达所需要时间
     elapsedTime() {
-      // 将所有的时间，以：切割时间格式：12：30 ，并转化为分钟
-      // dep 出发  arr到达
-      const dep = this.item.dep_time.split(":");
-      // console.log(dep); // ["20", "30"]
-      const arr = this.item.arr_time.split(":");
-      // 再将得出的数组，参数，例20:30 小时*60=分钟 + 分钟
-      const depSum = dep[0] * 60 + +dep[1];
-      const arrSum = arr[0] * 60 + +arr[1];
-      // console.log(depSum, arrSum); //
-      // 到达-出发 =间隔时间
-      let elapsed = arrSum - depSum;
-      // 判断 elapsed若得出负数，则为 到达城市为第二天凌晨时间
-      if (elapsed < 0) {
-        elapsed = arrSum + 24 * 60 - depSum;
-      }
-      // console.log(Math.floor(elapsed/60)+":"+elapsed%60)
+      return computationTime(this.item.dep_time,this.item.arr_time)
+      // // 将所有的时间，以：切割时间格式：12：30 ，并转化为分钟
+      // // dep 出发  arr到达
+      // const dep = this.item.dep_time.split(":");
+      // // console.log(dep); // ["20", "30"]
+      // const arr = this.item.arr_time.split(":");
+      // // 再将得出的数组，参数，例20:30 小时*60=分钟 + 分钟
+      // const depSum = dep[0] * 60 + +dep[1];
+      // const arrSum = arr[0] * 60 + +arr[1];
+      // // console.log(depSum, arrSum); //
+      // // 到达-出发 =间隔时间
+      // let elapsed = arrSum - depSum;
+      // // 判断 elapsed若得出负数，则为 到达城市为第二天凌晨时间
+      // if (elapsed < 0) {
+      //   elapsed = arrSum + 24 * 60 - depSum;
+      // }
+      // // console.log(Math.floor(elapsed/60)+":"+elapsed%60)
 
-      return `${Math.floor(elapsed / 60)}时${elapsed % 60}分`;
+      // return `${Math.floor(elapsed / 60)}时${elapsed % 60}分`;
     }
   },
   mounted() {}
