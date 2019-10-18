@@ -3,7 +3,7 @@
     <div class="main">
       <div class="pay-title">
         支付总金额
-        <span class="pay-price">￥ 1000</span>
+        <span class="pay-price">￥ {{order.price}}</span>
       </div>
       <div class="pay-main">
         <h4>微信支付</h4>
@@ -24,7 +24,72 @@
 </template>
 
 <script>
-export default {};
+// npm i qrcode 导入二维码生成插件
+import QRCode from "qrcode";
+export default {
+  data() {
+    return {
+      // 保存后天获取的订单详情(先声明坑位，再从下面获取赋值)
+      order: {
+        price: 0
+      },
+      payState: null
+    };
+  },
+  mounted() {
+    // 获取url带过来的订单id
+    // const id =this.$route.query.id
+    const { id } = this.$route.query;
+    setTimeout(async () => {
+      //  请求订单id详情 /airorders/:id
+      const res = await this.$axios({
+        url: "/airorders/" + id,
+        headers: {
+          // 这是jwt标准的token
+          Authorization: `Bearer ${this.$store.state.user.userInfo.token}`
+        }
+      });
+      // console.log(res);
+      // 保存订单详情
+      this.order = res.data;
+      // console.log(this.order);
+      // this.order.price = order.price;
+      // 查找dom节点，准备将二维码显示
+      var canvas = document.getElementById("qrcode-stage");
+      QRCode.toCanvas(canvas, this.order.payInfo.code_url, { width: 250 });
+
+      // 注意回调地狱
+      // 查询付款状态 成功/未付款
+      this.payState = setInterval(async () => {
+        const res = await this.$axios({
+          url: "/airorders/checkpay",
+          method: "POST",
+          headers: {
+            // 这是jwt标准的token
+            Authorization: `Bearer ${this.$store.state.user.userInfo.token}`
+          },
+          data: {
+            id: this.$route.query.id,
+            nonce_str: this.order.price,
+            out_trade_no: this.order.orderNo
+          }
+        });
+        // 获取支付状态
+        // console.log(res)
+        const { statusTxt } = res.data;
+        // 判断
+        if (statusTxt === "支付完成") {
+          this.$message.success(statusTxt);
+          clearInterval(this.payState);
+        }
+      }, 3000);
+    }, 10);
+  },
+  // 组件销毁destroyed 时候使用的，一般情况下用于清除定时器
+  destroyed() {
+    clearInterval(this.payState);
+  }
+};
 </script>
 
 <style scoped lang="less">

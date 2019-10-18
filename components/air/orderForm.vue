@@ -129,7 +129,7 @@ export default {
     },
 
     // 提交订单
-    async handleSubmit() {
+    handleSubmit() {
       const data = {
         users: this.users,
         insurances: this.insurances,
@@ -141,7 +141,7 @@ export default {
         invoice: this.invoice
       };
       // console.log(data);
-      const res = await this.$axios({
+      this.$axios({
         url: "/airorders",
         method: "POST",
         data,
@@ -149,9 +149,20 @@ export default {
           // 这是jwt标准的token
           Authorization: `Bearer ${this.$store.state.user.userInfo.token}`
         }
+      }).then(res => {
+        // console.log(res) // 发现报错403（提交机票订单，后台验证无token，无登录，重定向到登录页），
+        // 在plugins/axios.js中，添加拦截
+        // 解构 获取提交message
+        const { data, message } = res.data;
+        this.$message.success(message);
+        // 带参数，跳转到支付pay页
+        this.$router.push({
+          path:"/air/pay",
+          query:{
+            id:data.id
+          }
+        })
       });
-      // console.log(res) // 发现报错403（提交机票订单，后台验证无token，无登录，重定向到登录页），
-      // 在plugins/axios.js中，添加拦截
     }
   },
   mounted() {

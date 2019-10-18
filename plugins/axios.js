@@ -1,5 +1,7 @@
 // 
-import {Message} from 'element-ui';
+import {
+  Message
+} from 'element-ui';
 
 // 使用axios的拦截器拦截页面的所有请求错误，并弹出对应的错误提示。
 // context包含nuxt.js下所有的方法， 固定参数
@@ -9,11 +11,15 @@ export default (context) => {
   context.$axios.onError(res => {
     // console.log(res.response)
     // res是错误对象，error的对象可以通过response获取详细信息
-    const {message,statusCode} = res.response.data;
+    const {
+      message,
+      statusCode
+    } = res.response.data;
     if (statusCode === 400) {
       Message.error(message)
     }
-    if(statusCode===403){
+    // if (statusCode === 403 || statusCode === 401)
+    if ([403, 401].indexOf(statusCode) > -1) {
       // 1.提交机票订单，后台验证无token，无登录，重定向到登录页
       context.redirect("/user/login")
     }
