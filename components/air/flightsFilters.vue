@@ -8,7 +8,7 @@
         {{data.info.departDate}}
       </el-col>
       <el-col :span="4">
-        <el-select size="mini" v-model="airport" placeholder="起飞机场" @change="handleAirport">
+        <el-select size="mini" v-model="filters.airport" placeholder="起飞机场" >
           <el-option
             v-for="(item,index) in data.options.airport"
             :key="index"
@@ -18,7 +18,11 @@
         </el-select>
       </el-col>
       <el-col :span="4">
-        <el-select size="mini" v-model="flightTimes" placeholder="起飞时间" @change="handleFlightTimes">
+        <el-select
+          size="mini"
+          v-model="filters.flightTimes"
+          placeholder="起飞时间"
+        >
           <!-- label="" 因为显示需要，因此字符串拼接 -->
           <!-- value=""只能传字符串，因此字符串插值 -->
           <el-option
@@ -30,7 +34,7 @@
         </el-select>
       </el-col>
       <el-col :span="4">
-        <el-select size="mini" v-model="company" placeholder="航空公司" @change="handleCompany">
+        <el-select size="mini" v-model="filters.company" placeholder="航空公司">
           <el-option
             v-for="(item,index) in data.options.company"
             :key="index"
@@ -40,7 +44,7 @@
         </el-select>
       </el-col>
       <el-col :span="4">
-        <el-select size="mini" v-model="airSize" placeholder="机型" @change="handleAirSize">
+        <el-select size="mini" v-model="filters.airSize" placeholder="机型" >
           <el-option
             v-for="(item,index) in this.planSizeList"
             :key="index"
@@ -69,11 +73,13 @@ export default {
   },
   data() {
     return {
-      // 此4项为筛选 select 的数据，声明坑位，一键撤销事件
-      airport: "", // 机场
-      flightTimes: "", // 出发时间
-      company: "", // 航空公司
-      airSize: "", // 机型大小
+      filters: {
+        // 此4项为筛选 select 的数据，声明坑位，一键撤销事件
+        airport: "", // 机场
+        flightTimes: "", // 出发时间
+        company: "", // 航空公司
+        airSize: "" // 机型大小
+      },
       // 固定数据，机型大小列表
       planSizeList: [
         { name: "大型", size: "L" },
@@ -82,65 +88,55 @@ export default {
       ]
     };
   },
+  watch: {
+    filters: {
+      deep: true,
+      handler() {
+        // 同一多项过滤筛选封装
+        // 先假设所有都符合为true,然后选出不符合条件的
+        var arr = this.data.flights.filter(v => {
+          let valid = true;
+          // 筛选航班公司
+          if (this.filters.company && this.filters.company !== v.airline_name) {
+            valid = false;
+          }
+          // 筛选机型大小
+          if (this.filters.airSize && this.filters.airSize !== v.plane_size) {
+            valid = false;
+          }
+          // 筛选 起飞机场
+          if (
+            this.filters.airport &&
+            this.filters.airport !== v.org_airport_name
+          ) {
+            valid = false;
+          }
+          // 筛选 起飞时间
+          if (this.filters.flightTimes) {
+            // 遍历，得出所有的 dep_time起飞时间：如6：55, 切割： ["6","55"]拿到索引[0]的项，小时
+            const starTime = +v.dep_time.split(":")[0];
+            // 显示6:00-12:00绑定的值输出为[6,12] 数组split() 以逗号切割
+            const arr = this.filters.flightTimes.split(",");
+            if (arr[0] > starTime || arr[1] <= starTime) {
+              valid = false;
+            }
+          }
+
+          return valid;
+        });
+        console.log(arr);
+        this.$emit("setFilterData", arr);
+      }
+    }
+  },
   methods: {
-    // 选择机场时候触发
-    handleAirport(value) {
-      // console.log("起飞机场"+value);
-      // console.log(this.data)
-      const afterFilter = this.data.flights.filter(v => {
-        return (v.org_airport_name === value);
-      });
-      // console.log(afterFilter)
-      this.$emit("setFilterData", afterFilter);
-    },
-
-    // 选择出发时间时候触发
-    handleFlightTimes(value) {
-      // console.log("选择出发时间"+value);
-      // console.log(this.data)
-      // 显示6:00-12:00绑定的值输出为[6,12] 数组split() 以逗号切割
-      const arr=value.split(",")
-      // console.log(arr) // 如：["0","6"]
-      const arr2 = this.data.flights.filter(v=>{
-        // 遍历，得出所有的 dep_time起飞时间：如6：55, 切割： ["6","55"]拿到索引[0]的项，小时
-        const starTime= +v.dep_time.split(":")[0]
-        // 判断 起飞的小时，在区间 arr[0] ~ arr[1]间 则终止执行
-        return +arr[0] <= starTime && starTime < +arr[1]
-      })
-      // 通过事件传值，将数据传到父组件，进行渲染
-      this.$emit("setFilterData", arr2);
-    },
-
-    // 选择航空公司时候触发
-    handleCompany(value) {
-      // console.log("航空公司"+value);
-      const afterFilter = this.data.flights.filter(v => {
-        // 判断 值是否相等 相等时，终止执行
-        return (v.airline_name === value);
-      });
-      // console.log(afterFilter)
-      this.$emit("setFilterData", afterFilter);
-    },
-
-    // 选择机型时候触发
-    handleAirSize(value) {
-      // console.log("选择机型"+value);
-      // console.log(this.data)
-      const afterFilter = this.data.flights.filter(v => {
-        // console.log(v)
-        return v.plane_size === value;
-      });
-      // console.log(afterFilter)
-      this.$emit("setFilterData", afterFilter);
-    },
-
     // 撤销条件时候触发
     handleFiltersCancel() {
       // console.log("撤销");
-      this.airport=""; // 机场
-      this.flightTimes=""; // 出发时间
-      this.company=""; // 航空公司
-      this.airSize=""; // 机型大小
+      this.filters.airport = ""; // 机场
+      this.filters.flightTimes = ""; // 出发时间
+      this.filters.company = ""; // 航空公司
+      this.filters.airSize = ""; // 机型大小
       // 将完整的 未筛选过的 数据传到父组件，进行渲染
       this.$emit("setFilterData", this.data.flights);
     }

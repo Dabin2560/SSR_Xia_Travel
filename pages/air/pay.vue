@@ -29,7 +29,7 @@ import QRCode from "qrcode";
 export default {
   data() {
     return {
-      // 保存后天获取的订单详情(先声明坑位，再从下面获取赋值)
+      // 保存后端获取的订单详情(先声明坑位，再从下面获取赋值)
       order: {
         price: 0
       },
